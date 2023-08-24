@@ -26,7 +26,7 @@ const config: SocketIoConfig = {
 		transports: ['websocket']
 	}
 }
-z
+
 
 
 @NgModule({
