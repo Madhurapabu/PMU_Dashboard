@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Color } from '@swimlane/ngx-charts';
+import { WebsocketService } from '../websocket.service';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-voltage',
@@ -7,6 +9,32 @@ import { Color } from '@swimlane/ngx-charts';
   styleUrls: ['./voltage.component.css']
 })
 export class VoltageComponent implements OnInit {
+
+  constructor(private websocketService: WebsocketService) {
+    this.websocketService.messages.subscribe((message: string) => {
+      const part = message.split(',');
+      if (part[0] === 'v') {
+        const timeString = part[3];
+        //const timeFormatted = moment(timeString).format('HH:mm:ss')
+        const d:Date = this.setTime(timeString);
+        const timeFormatted = new Date(d);
+        const ms = timeFormatted.getSeconds();
+        console.log(timeString)
+        this.seconds += d.getMilliseconds();
+        this.updateGraph(parseFloat(part[1]),this.seconds);
+
+        //console.log((part[3]))
+      }
+
+    });
+  }
+
+  ngOnInit(): void {
+    this.websocketService.messages.subscribe((message: string) => {
+    });
+
+  //  this.startInterval();
+  }
 
   isLiveData = true
 
@@ -18,7 +46,7 @@ export class VoltageComponent implements OnInit {
   onPmuCheckboxChange(checkboxId: string) {
     switch (checkboxId) {
       case 'pmuCheckbox1':
-        console.log('PMU 1 checked:', this.pmu1Checked);
+        console.log('PMU 1 hashkajsa:', this.pmu1Checked);
         // Perform additional actions for PMU 1
         break;
       case 'pmuCheckbox2':
@@ -96,46 +124,55 @@ customColors = (value: any) => {
   seconds = 0
   time = 50
 
-  ngOnInit(): void {
-    this.startInterval()
-  }
-
   // Function to start the interval
-  startInterval() {
-    this.intervalId = setInterval(() => {
-      this.updateSeconds();
-    }, this.time);
-  }
+  // startInterval() {
+  //   this.intervalId = setInterval(() => {
+  //     this.updateSeconds();
+  //   }, this.time);
+  // }
 
-  updateSeconds(): void {
+  // updateSeconds(): void {
 
-    this.seconds = this.seconds + 1
-    this.updateMultiArray(this.seconds);
+  //   this.seconds = this.seconds + 1
+  //   this.updateMultiArray(this.seconds);
+  // }
 
+  // updateMultiArray(seconds: number): void {
+  //   const newSeries = {
+  //     name: seconds,
+  //     value: (Math.random() * (240 - 225) + 225)
+  //   };
 
+  //   // const newSeries2 = {
+  //   //   name: seconds,
+  //   //   value: (Math.random() * (240 - 225) + 225)
+  //   // };
+  //   // Create a new array with the updated series and assign it to the 'multi' property
+  //   this.multi = [...this.multi];
+  //   this.multi[0].series.push(newSeries);
+  //   //this.multi[1].series.push(newSeries2);
 
-  }
+  //   if (this.multi[0].series.length > 200) {
+  //     this.multi[0].series.shift()
+  //   }
+  //   // if (this.multi[1].series.length > 200) {
+  //   //   this.multi[1].series.shift()
+  //   // }
+  // }
 
-  updateMultiArray(seconds: number): void {
+  updateGraph(val:number,seconds:number){
+
     const newSeries = {
       name: seconds,
-      value: (Math.random() * (240 - 225) + 225)
+      value: val
     };
 
-    const newSeries2 = {
-      name: seconds,
-      value: (Math.random() * (240 - 225) + 225)
-    };
-    // Create a new array with the updated series and assign it to the 'multi' property
     this.multi = [...this.multi];
     this.multi[0].series.push(newSeries);
-    this.multi[1].series.push(newSeries2);
 
-    if (this.multi[0].series.length > 200) {
+    if (this.multi[0].series.length > 5000) {
       this.multi[0].series.shift()
-    }
-    if (this.multi[1].series.length > 200) {
-      this.multi[1].series.shift()
+      this.seconds = 0;
     }
   }
 
@@ -148,12 +185,26 @@ customColors = (value: any) => {
   }
 
   onResume() {
-    this.startInterval();
+    // this.startInterval();
   }
 
   onLive() {
     this.isLiveData = true
-    this.startInterval();
+    // this.startInterval();
+  }
+
+  setTime(time:string):Date{
+    const[h,m,sANDm] = time.split(":");
+    const[s,ms] = sANDm.split(".");
+
+    const newtime =  new Date();
+
+    newtime.setHours(Number(h));
+    newtime.setMinutes(Number(m));
+    newtime.setSeconds(Number(s));
+    newtime.setMilliseconds(Number(ms));
+
+    return newtime;
   }
 
 }

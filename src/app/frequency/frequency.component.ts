@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { WebsocketService } from '../websocket.service';
 
 @Component({
   selector: 'app-frequency',
@@ -6,6 +7,25 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./frequency.component.css']
 })
 export class FrequencyComponent implements OnInit{
+
+  constructor(private websocketService: WebsocketService) {
+    this.websocketService.messages.subscribe((message: string) => {
+      const part = message.split(',');
+      if (part[0] === 'v') {
+        const timeString = part[3];
+        //const timeFormatted = moment(timeString).format('HH:mm:ss')
+        const d:Date = this.setTime(timeString);
+        const timeFormatted = new Date(d);
+        const ms = timeFormatted.getSeconds();
+        console.log(timeString)
+        this.seconds += d.getMilliseconds();
+        this.updateGraph(parseFloat(part[2]),this.seconds);
+
+        //console.log((part[3]))
+      }
+
+    });
+  }
 
   isLiveData = true
 
@@ -96,45 +116,45 @@ customColors = (value: any) => {
   time = 50
 
   ngOnInit(): void {
-    this.startInterval()
+    //this.startInterval()
   }
 
   // Function to start the interval
-  startInterval() {
-    this.intervalId = setInterval(() => {
-      this.updateSeconds();
-    }, this.time);
-  }
+  // startInterval() {
+  //   this.intervalId = setInterval(() => {
+  //     this.updateSeconds();
+  //   }, this.time);
+  // }
 
-  updateSeconds(): void {
+  // updateSeconds(): void {
 
-    this.seconds = this.seconds + 1
-    this.updateMultiArray(this.seconds);
+  //   this.seconds = this.seconds + 1
+  //   this.updateMultiArray(this.seconds);
 
-  }
+  // }
 
-  updateMultiArray(seconds: number): void {
-    const newSeries = {
-      name: seconds,
-      value: (Math.random() * (52 - 48) + 48)
-    };
+  // updateMultiArray(seconds: number): void {
+  //   const newSeries = {
+  //     name: seconds,
+  //     value: (Math.random() * (52 - 48) + 48)
+  //   };
 
-    const newSeries2 = {
-      name: seconds,
-      value: (Math.random() * (52 - 48) + 48)
-    };
-    // Create a new array with the updated series and assign it to the 'multi' property
-    this.multi = [...this.multi];
-    this.multi[0].series.push(newSeries);
-    this.multi[1].series.push(newSeries2);
+  //   const newSeries2 = {
+  //     name: seconds,
+  //     value: (Math.random() * (52 - 48) + 48)
+  //   };
+  //   // Create a new array with the updated series and assign it to the 'multi' property
+  //   this.multi = [...this.multi];
+  //   this.multi[0].series.push(newSeries);
+  //   this.multi[1].series.push(newSeries2);
 
-    if (this.multi[0].series.length > 200) {
-      this.multi[0].series.shift()
-    }
-    if (this.multi[1].series.length > 200) {
-      this.multi[1].series.shift()
-    }
-  }
+  //   if (this.multi[0].series.length > 200) {
+  //     this.multi[0].series.shift()
+  //   }
+  //   if (this.multi[1].series.length > 200) {
+  //     this.multi[1].series.shift()
+  //   }
+  // }
 
 
 
@@ -145,12 +165,42 @@ customColors = (value: any) => {
   }
 
   onResume() {
-    this.startInterval();
+    //this.startInterval();
   }
 
   onLive() {
     this.isLiveData = true
-    this.startInterval();
+    //this.startInterval();
+  }
+
+  updateGraph(val:number,seconds:number){
+
+    const newSeries = {
+      name: seconds,
+      value: val
+    };
+
+    this.multi = [...this.multi];
+    this.multi[0].series.push(newSeries);
+
+    if (this.multi[0].series.length > 100) {
+      this.multi[0].series.shift()
+      this.seconds = 0;
+    }
+  }
+
+  setTime(time:string):Date{
+    const[h,m,sANDm] = time.split(":");
+    const[s,ms] = sANDm.split(".");
+
+    const newtime =  new Date();
+
+    newtime.setHours(Number(h));
+    newtime.setMinutes(Number(m));
+    newtime.setSeconds(Number(s));
+    newtime.setMilliseconds(Number(ms));
+
+    return newtime;
   }
 
 }

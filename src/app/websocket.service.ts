@@ -1,23 +1,28 @@
-import { Injectable, NgModule } from '@angular/core';
-import { Socket } from 'ngx-socket-io';  
-
-
+import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
 
 @Injectable({
-	providedIn: 'root'
+  providedIn: 'root',
 })
+export class WebsocketService {
+  private socket!: WebSocket; // Add the ! operator here
+  public messages: Subject<string> = new Subject<string>();
 
-export class SocketService {
-  
-	constructor(private socket: Socket) { }
+  constructor() {
+    this.connect();
+  }
 
-	// emit event
-	sendMessage() {
-		this.socket.emit('fetchMovies');
-	} 
+  private connect() {
+    const uri = 'ws://34.125.45.1:3000';
+    this.socket = new WebSocket(uri);
 
-	// listen event
-	onRecieveMessage() {
-		return this.socket.fromEvent('fetchMovies');
-	}
+    this.socket.onopen = (event) => {
+      console.log('Connected to WebSocket server');
+    };
+
+    this.socket.onmessage = (event) => {
+      const message = event.data;
+      this.messages.next(message);
+    };
+  }
 }
