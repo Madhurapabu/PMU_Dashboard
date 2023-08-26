@@ -72,14 +72,15 @@ export class VoltageComponent implements OnInit {
 // chart options
 legend: boolean = true;
 showLabels: boolean = true;
-animations: boolean = false;
+animations: boolean = true;
 xAxis: boolean = true;
 yAxis: boolean = true;
 showYAxisLabel: boolean = true;
 showXAxisLabel: boolean = true;
 xAxisLabel: string = 'Time';
 yAxisLabel: string = 'Voltage';
-timeline: boolean = true;
+timeline: boolean = false;
+autoScale: boolean = true;
 
 colorScheme = {
   domain: ['#5AA454', '#E44D25', '#CFC0BB', '#7aa3e5', '#a8385d', '#aae3f5']
@@ -92,7 +93,7 @@ customColors = (value: any) => {
 
   multi = [
     {
-      name: 'PMU 1',
+      name: 'Phase 1',
       series: [
         {
           name: 0,
@@ -108,7 +109,7 @@ customColors = (value: any) => {
 
   multi_ph2 = [
     {
-      name: 'PMU 1',
+      name: 'Phase 2',
       series: [
         {
           name: 0,
@@ -124,7 +125,7 @@ customColors = (value: any) => {
 
   multi_ph3 = [
     {
-      name: 'PMU 1',
+      name: 'Phase 3',
       series: [
         {
           name: 0,
@@ -189,9 +190,9 @@ customColors = (value: any) => {
     this.multi = [...this.multi];
     this.multi[0].series.push(newSeries);
 
-    if (this.multi[0].series.length > 5000) {
+    if (this.multi[0].series.length > 200) {
       this.multi[0].series.shift()
-      this.seconds = 0;
+      //this.seconds = 0;
     }
   }
 
@@ -205,9 +206,9 @@ customColors = (value: any) => {
     this.multi_ph2 = [...this.multi_ph2];
     this.multi_ph2[0].series.push(newSeries);
 
-    if (this.multi_ph2[0].series.length > 5000) {
+    if (this.multi_ph2[0].series.length > 200) {
       this.multi_ph2[0].series.shift()
-      this.seconds = 0;
+      //this.seconds = 0;
     }
   }
 
@@ -221,9 +222,9 @@ customColors = (value: any) => {
     this.multi_ph3 = [...this.multi_ph3];
     this.multi_ph3[0].series.push(newSeries);
 
-    if (this.multi_ph3[0].series.length > 5000) {
+    if (this.multi_ph3[0].series.length > 200) {
       this.multi_ph3[0].series.shift()
-      this.seconds = 0;
+      //this.seconds = 0;
     }
   }
 
