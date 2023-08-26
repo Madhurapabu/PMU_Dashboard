@@ -27,8 +27,6 @@ const config: SocketIoConfig = {
 	}
 }
 
-
-
 @NgModule({
   declarations: [
     AppComponent,

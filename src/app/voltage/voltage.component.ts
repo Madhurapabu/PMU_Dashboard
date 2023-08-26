@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Color } from '@swimlane/ngx-charts';
 import { WebsocketService } from '../websocket.service';
-import * as moment from 'moment';
+
 
 @Component({
   selector: 'app-voltage',
@@ -14,7 +14,7 @@ export class VoltageComponent implements OnInit {
     this.websocketService.messages.subscribe((message: string) => {
       const part = message.split(',');
       if (part[0] === 'v') {
-        const timeString = part[3];
+        const timeString = part[5];
         //const timeFormatted = moment(timeString).format('HH:mm:ss')
         const d:Date = this.setTime(timeString);
         const timeFormatted = new Date(d);
@@ -22,8 +22,9 @@ export class VoltageComponent implements OnInit {
         console.log(timeString)
         this.seconds += d.getMilliseconds();
         this.updateGraph(parseFloat(part[1]),this.seconds);
+        this.updateGraph_ph2(parseFloat(part[2]),this.seconds);
+        this.updateGraph_ph3(parseFloat(part[3]),this.seconds);
 
-        //console.log((part[3]))
       }
 
     });
@@ -103,21 +104,40 @@ customColors = (value: any) => {
         }
       ]
     },
+  ];
+
+  multi_ph2 = [
     {
-      name: 'PMU 2',
+      name: 'PMU 1',
       series: [
         {
           name: 0,
-          value: 2
+          value: 1
         },
         {
           name: 1,
-          value: 1
+          value: 2
         }
       ]
-    }
-
+    },
   ];
+
+  multi_ph3 = [
+    {
+      name: 'PMU 1',
+      series: [
+        {
+          name: 0,
+          value: 1
+        },
+        {
+          name: 1,
+          value: 2
+        }
+      ]
+    },
+  ];
+
 
 
   intervalId: any;
@@ -159,7 +179,6 @@ customColors = (value: any) => {
   //   //   this.multi[1].series.shift()
   //   // }
   // }
-
   updateGraph(val:number,seconds:number){
 
     const newSeries = {
@@ -176,6 +195,37 @@ customColors = (value: any) => {
     }
   }
 
+  updateGraph_ph2(val:number,seconds:number){
+
+    const newSeries = {
+      name: seconds,
+      value: val
+    };
+
+    this.multi_ph2 = [...this.multi_ph2];
+    this.multi_ph2[0].series.push(newSeries);
+
+    if (this.multi_ph2[0].series.length > 5000) {
+      this.multi_ph2[0].series.shift()
+      this.seconds = 0;
+    }
+  }
+
+  updateGraph_ph3(val:number,seconds:number){
+
+    const newSeries = {
+      name: seconds,
+      value: val
+    };
+
+    this.multi_ph3 = [...this.multi_ph3];
+    this.multi_ph3[0].series.push(newSeries);
+
+    if (this.multi_ph3[0].series.length > 5000) {
+      this.multi_ph3[0].series.shift()
+      this.seconds = 0;
+    }
+  }
 
 
   onPause() {
