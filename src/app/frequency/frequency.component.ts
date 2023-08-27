@@ -11,18 +11,42 @@ export class FrequencyComponent implements OnInit{
   constructor(private websocketService: WebsocketService) {
     this.websocketService.messages.subscribe((message: string) => {
       const part = message.split(',');
+      //console.log(part[0])
       if (part[0] === 'v') {
-        const timeString = part[3];
+        const timeString = part[5];
         //const timeFormatted = moment(timeString).format('HH:mm:ss')
         const d:Date = this.setTime(timeString);
         const timeFormatted = new Date(d);
         const ms = timeFormatted.getSeconds();
-        console.log(timeString)
-        this.seconds += d.getMilliseconds();
-        this.updateGraph(parseFloat(part[2]),this.seconds);
-
+        //console.log(timeString)
+        this.seconds_ph1 += d.getMilliseconds();
+        this.updateGraph(parseFloat(part[4]),this.seconds_ph1);
         //console.log((part[3]))
       }
+
+      else if (part[0] === 'f2') {
+        const timeString = part[2];
+        const d:Date = this.setTime_ph2(timeString);
+        const timeFormatted = new Date(d);
+        const ms = timeFormatted.getSeconds();
+        //console.log(part[1])
+       // this.seconds_ph1 += d.getMilliseconds();
+        this.updateGraph_ph2(parseFloat(part[1]),this.seconds_ph1);
+       // console.log((part[3]))
+      }
+
+      else if (part[0] === 'f3') {
+        // const timeString = part[2];
+        // const d:Date = this.setTime_ph2(timeString);
+        // const timeFormatted = new Date(d);
+        // const ms = timeFormatted.getSeconds();
+        //console.log(part[1])
+        //this.seconds_ph1 += d.getMilliseconds();
+        this.updateGraph_ph3(parseFloat(part[1]),this.seconds_ph1);
+       // console.log((part[3]))
+      }
+
+
 
     });
   }
@@ -69,7 +93,7 @@ showYAxisLabel: boolean = true;
 showXAxisLabel: boolean = true;
 xAxisLabel: string = 'Time';
 yAxisLabel: string = 'Frequency';
-timeline: boolean = true;
+timeline: boolean = false;
 
 colorScheme = {
   domain: ['#5AA454', '#E44D25', '#CFC0BB', '#7aa3e5', '#a8385d', '#aae3f5']
@@ -82,7 +106,7 @@ customColors = (value: any) => {
 
   multi = [
     {
-      name: 'PMU 1',
+      name: 'Phase 1',
       series: [
         {
           name: 0,
@@ -91,72 +115,54 @@ customColors = (value: any) => {
         {
           name: 1,
           value: 2
-        }
-      ]
-    },
-    {
-      name: 'PMU 2',
-      series: [
-        {
-          name: 0,
-          value: 2
-        },
-        {
-          name: 1,
-          value: 1
         }
       ]
     }
+  ];
 
+  multi_ph2 = [
+    {
+      name: 'Phase 2',
+      series: [
+        {
+          name: 0,
+          value: 1
+        },
+        {
+          name: 1,
+          value: 2
+        }
+      ]
+    }
+  ];
+
+  multi_ph3 = [
+    {
+      name: 'Phase 3',
+      series: [
+        {
+          name: 0,
+          value: 1
+        },
+        {
+          name: 1,
+          value: 2
+        }
+      ]
+    }
   ];
 
 
+
+
   intervalId: any;
-  seconds = 0
+  seconds_ph1 = 0
+  seconds_ph2 = 0
   time = 50
 
   ngOnInit(): void {
     //this.startInterval()
   }
-
-  // Function to start the interval
-  // startInterval() {
-  //   this.intervalId = setInterval(() => {
-  //     this.updateSeconds();
-  //   }, this.time);
-  // }
-
-  // updateSeconds(): void {
-
-  //   this.seconds = this.seconds + 1
-  //   this.updateMultiArray(this.seconds);
-
-  // }
-
-  // updateMultiArray(seconds: number): void {
-  //   const newSeries = {
-  //     name: seconds,
-  //     value: (Math.random() * (52 - 48) + 48)
-  //   };
-
-  //   const newSeries2 = {
-  //     name: seconds,
-  //     value: (Math.random() * (52 - 48) + 48)
-  //   };
-  //   // Create a new array with the updated series and assign it to the 'multi' property
-  //   this.multi = [...this.multi];
-  //   this.multi[0].series.push(newSeries);
-  //   this.multi[1].series.push(newSeries2);
-
-  //   if (this.multi[0].series.length > 200) {
-  //     this.multi[0].series.shift()
-  //   }
-  //   if (this.multi[1].series.length > 200) {
-  //     this.multi[1].series.shift()
-  //   }
-  // }
-
-
 
   onPause() {
     clearInterval(this.intervalId);
@@ -183,13 +189,58 @@ customColors = (value: any) => {
     this.multi = [...this.multi];
     this.multi[0].series.push(newSeries);
 
-    if (this.multi[0].series.length > 100) {
+    if (this.multi[0].series.length > 200) {
       this.multi[0].series.shift()
-      this.seconds = 0;
     }
   }
 
+  updateGraph_ph2(val:number,seconds:number){
+
+    const newSeries = {
+      name: seconds,
+      value: val
+    };
+
+    this.multi_ph2 = [...this.multi_ph2];
+    this.multi_ph2[0].series.push(newSeries);
+
+    if (this.multi_ph2[0].series.length > 200) {
+      this.multi_ph2[0].series.shift()
+    }
+  }
+
+  updateGraph_ph3(val:number,seconds:number){
+
+    const newSeries = {
+      name: seconds,
+      value: val
+    };
+
+    this.multi_ph3 = [...this.multi_ph3];
+    this.multi_ph3[0].series.push(newSeries);
+
+    if (this.multi_ph3[0].series.length > 200) {
+      this.multi_ph3[0].series.shift()
+    }
+  }
+
+
+
   setTime(time:string):Date{
+    const[h,m,sANDm] = time.split(":");
+    const[s,ms] = sANDm.split(".");
+
+    const newtime =  new Date();
+
+    newtime.setHours(Number(h));
+    newtime.setMinutes(Number(m));
+    newtime.setSeconds(Number(s));
+    newtime.setMilliseconds(Number(ms));
+
+    return newtime;
+  }
+  
+  setTime_ph2(time:string):Date{
     const[h,m,sANDm] = time.split(":");
     const[s,ms] = sANDm.split(".");
 
